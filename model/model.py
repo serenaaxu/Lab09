@@ -31,6 +31,10 @@ class Model:
         """ Carica tutti i tour in un dizionario [id, Tour]"""
         self.tour_map = TourDAO.get_tour()
 
+        for t in self.tour_map.values():
+            t.attrazioni = set()
+            t.valore_culturale_totale = 0
+
     def load_attrazioni(self):
         """ Carica tutte le attrazioni in un dizionario [id, Attrazione]"""
         self.attrazioni_map = AttrazioneDAO.get_attrazioni()
@@ -49,7 +53,10 @@ class Model:
         if self.tour_attrazioni is None:
             self.tour_attrazioni = []
 
-        for id_tour, id_attrazione in self.tour_attrazioni:
+        for row in self.tour_attrazioni:
+            id_tour = row["id_tour"]
+            id_attrazione = row["id_attrazione"]
+
             if id_tour in self.tour_map and id_attrazione in self.attrazioni_map:
                 tour_obj = self.tour_map[id_tour]
                 attr_obj = self.attrazioni_map[id_attrazione]
@@ -75,6 +82,16 @@ class Model:
 
         # TODO
 
+        if max_giorni is None or max_giorni == 0 or max_giorni == "":
+            self._max_giorni = None
+        else:
+            self._max_giorni = int(max_giorni)
+
+        if max_budget is None or max_budget == 0 or max_budget == "":
+            self._max_budget = None
+        else:
+            self._max_budget = float(max_budget)
+
         self._tour_disponibili = []
         for t in self.tour_map.values():
             if t.id_regione == id_regione:
@@ -99,7 +116,7 @@ class Model:
             if self._max_budget is not None and (costo_corrente + tour.costo > self._max_budget):
                 continue
 
-            if self._max_giorni is not None and (durata_corrente + tour.data_tour > self._max_giorni):
+            if self._max_giorni is not None and (durata_corrente + tour.durata_giorni > self._max_giorni):
                 continue
 
             attrazioni_tour_ids = {a.id for a in tour.attrazioni}
